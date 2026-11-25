@@ -27,6 +27,31 @@ body {
   background: repeating-linear-gradient(90deg, var(--pink) 0 48px, var(--cream) 48px 96px);
 }
 
+.field {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  background: #fff8f4;
+  border: 1.5px solid var(--brown);
+  border-radius: 0.6rem;
+}
+.field:focus-visible, .btn:focus-visible, a:focus-visible {
+  outline: 3px solid var(--rose);
+  outline-offset: 2px;
+}
+.btn {
+  min-height: 44px;
+  padding: 0.5rem 1.1rem;
+  border: 1.5px solid var(--brown);
+  border-radius: 999px;
+  font-weight: 600;
+  box-shadow: 2px 2px 0 var(--brown);
+}
+.btn:disabled { opacity: 0.6; }
+.btn-primary { background: var(--brown); color: var(--cream); }
+.btn-secondary { background: var(--cream); color: var(--brown); }
+.btn-danger { background: #fff; color: #8a1c1c; border-color: #8a1c1c; box-shadow: 2px 2px 0 #8a1c1c; }
+
 /* Card style from the slot design: brown border + hard offset shadow. */
 .card {
   background: var(--pink);
