@@ -91,6 +91,7 @@ export function ProofUpload({ code, again = false }: { code: string; again?: boo
         htmlFor={`proof-${code}`}
         className={`flex min-h-[54px] w-full cursor-pointer items-center justify-center gap-3 rounded-2xl border-[1.5px] border-dashed border-brown bg-[#FFF8F4] px-4 text-center text-base font-bold ${busy ? "opacity-70" : ""}`}
       >
+        {/* eslint-disable-next-line @next/next/no-img-element -- local blob: preview, nothing to optimise */}
         {preview && <img src={preview} alt="" className="h-10 w-8 rounded object-cover" />}
         {busy ? "Uploading…" : again ? "Upload a different screenshot" : "Upload payment screenshot"}
       </label>

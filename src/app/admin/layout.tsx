@@ -3,6 +3,7 @@ import { signOut } from "@/app/login/actions";
 
 const NAV = [
   { href: "/admin", label: "Today" },
+  { href: "/admin/payments", label: "Payments" },
   { href: "/admin/menu", label: "Menu" },
   { href: "/admin/schedule", label: "Schedule" },
   { href: "/admin/settings", label: "Settings" },
