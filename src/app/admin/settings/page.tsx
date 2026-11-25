@@ -25,6 +25,17 @@ async function Settings() {
         <fieldset className="space-y-3">
           <legend className="font-serif text-xl font-bold italic">Payments & contact</legend>
           <Field label="InstaPay handle or number (shown to customers)" name="instapay_handle" defaultValue={s.instapay_handle} placeholder="nonzz@instapay" />
+          <Field
+            label="InstaPay payment link (customers tap it to open InstaPay)"
+            name="instapay_link"
+            type="url"
+            defaultValue={s.instapay_link}
+            placeholder="https://ipn.eg/S/yourname/instapay/…"
+          />
+          <p className="text-sm">
+            Get it in the InstaPay app: open your profile, tap <strong>Share</strong> (or <strong>Payment link</strong>) and copy the
+            ipn.eg link. Customers who tap it go straight to paying you.
+          </p>
           <Field label="WhatsApp number" name="whatsapp_number" defaultValue={s.whatsapp_number} placeholder="+201xxxxxxxxx" type="tel" />
         </fieldset>
 

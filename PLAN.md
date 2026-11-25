@@ -207,6 +207,7 @@ on the sticky cart bar at the bottom.
 │──────────────────────│   │ your payment.    │   │ [Get directions] │
 │ Send 265 EGP via     │   └──────────────────┘   └──────────────────┘
 │ InstaPay to:         │
+│ [ Pay with InstaPay ]│ ← opens the owner's ipn.eg payment link
 │ nonz@instapay [copy] │   Expired: "Time ran out. Your slot was
 │──────────────────────│   released." [Order again]
 │ [ Upload screenshot ]│

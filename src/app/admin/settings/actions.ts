@@ -11,10 +11,23 @@ export async function saveSettings(_prev: ActionResult | null, fd: FormData): Pr
     const whatsapp = text(fd, "whatsapp_number", { max: 20 }).replace(/[\s-]/g, "");
     if (whatsapp && !/^\+20\d{10}$/.test(whatsapp)) throw new InputError("WhatsApp number must look like +201xxxxxxxxx.");
 
+    // Customers tap this link to pay, so only accept a real https URL.
+    const instapayLink = text(fd, "instapay_link", { max: 300 });
+    if (instapayLink) {
+      let u: URL;
+      try {
+        u = new URL(instapayLink);
+      } catch {
+        throw new InputError("InstaPay link must be a full link starting with https://");
+      }
+      if (u.protocol !== "https:") throw new InputError("InstaPay link must start with https://");
+    }
+
     const { error } = await supabase
       .from("settings")
       .update({
         instapay_handle: text(fd, "instapay_handle", { max: 80 }),
+        instapay_link: instapayLink,
         whatsapp_number: whatsapp,
         hold_minutes: num(fd, "hold_minutes", { min: 5, max: 240, int: true }),
         booking_days_ahead: num(fd, "booking_days_ahead", { min: 0, max: 14, int: true }),
