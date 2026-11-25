@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Countdown, CopyButton } from "./order-client";
+import { LiveOrder, ProofUpload } from "./proof-upload";
 
 type Order = {
   code: string;
@@ -62,8 +63,11 @@ async function OrderView({ params }: { params: PageProps<"/o/[code]">["params"] 
   const waText = encodeURIComponent(`Hi Nonzz's! About my order ${order.code}`);
   const waLink = s.whatsapp_number ? `https://wa.me/${s.whatsapp_number.replace(/\D/g, "")}?text=${waText}` : null;
 
+  const live = ["pending_payment", "payment_submitted", "confirmed", "ready"].includes(order.status);
+
   return (
     <div className="card px-[18px] py-5">
+      {live && <LiveOrder code={order.code} />}
       <div className="flex items-baseline justify-between">
         <Link href="/" className="font-serif text-[26px] font-bold italic">Nonzz&apos;s</Link>
         <p className="font-bold tracking-wider">Order #{order.code}</p>
@@ -103,16 +107,23 @@ async function OrderView({ params }: { params: PageProps<"/o/[code]">["params"] 
             )}
             {!s.instapay_link && !s.instapay_handle && <p className="mt-2 text-sm">Payment details are coming soon. Please message us on WhatsApp.</p>}
           </div>
-          <p className="mt-3 text-center text-sm">
-            After paying, send us the InstaPay receipt on WhatsApp with your order number. We&apos;ll confirm it here.
-          </p>
+          <ProofUpload code={order.code} />
+          <p className="mt-1.5 text-center text-xs">Step 2: after paying, upload the InstaPay receipt so we can confirm your order.</p>
         </>
       )}
 
-      {order.status === "payment_submitted" && <p className="mt-3">Thanks! We&apos;re checking your payment. Check back here shortly.</p>}
-      {(order.status === "confirmed" || order.status === "ready") && (
-        <p className="mt-3 font-serif text-[26px] font-bold italic">See you {pickup}!</p>
+      {order.status === "payment_submitted" && (
+        <>
+          <p className="mt-3">
+            <strong>Receipt received ✓</strong> We&apos;re checking your payment. This page updates by itself, no need to refresh.
+          </p>
+          <ProofUpload code={order.code} again />
+        </>
       )}
+      {order.status === "confirmed" && <p className="mt-3 font-serif text-[26px] font-bold italic">Payment confirmed. See you {pickup}!</p>}
+      {order.status === "ready" && <p className="mt-3 font-serif text-[26px] font-bold italic">Your drinks are ready. Come pick them up!</p>}
+      {order.status === "picked_up" && <p className="mt-3">Enjoy your coffee, and thank you! ♥</p>}
+      {order.status === "cancelled" && <p className="mt-3">This order was cancelled. Message us on WhatsApp if that&apos;s unexpected.</p>}
       {order.status === "expired" && (
         <div className="mt-3">
           <p>Time ran out before payment arrived, so your slot was released.</p>
