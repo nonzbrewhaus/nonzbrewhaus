@@ -21,6 +21,18 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
             </Link>
           ))}
         </nav>
+        <form action="/admin/search" role="search" className="flex w-full items-center gap-2 sm:w-auto">
+          <label htmlFor="order-search" className="sr-only">Search orders by number, phone or name</label>
+          <input
+            id="order-search"
+            name="q"
+            type="search"
+            placeholder="Order #, phone or name"
+            autoComplete="off"
+            className="field !min-h-10 !py-1 sm:!w-56"
+          />
+          <button className="btn btn-secondary !min-h-10 text-sm">Search</button>
+        </form>
         <form action={signOut}>
           <button className="btn btn-secondary text-sm">Sign out</button>
         </form>
