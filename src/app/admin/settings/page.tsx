@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { requireAdmin } from "@/lib/auth";
 import { ActionForm } from "@/components/action-form";
-import { saveSettings } from "./actions";
+import { saveSettings, sendTestEmail } from "./actions";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -60,6 +60,15 @@ async function Settings() {
           </label>
         </fieldset>
       </ActionForm>
+
+      <div className="mt-8 border-t-[1.5px] border-brown pt-4">
+        <h2 className="font-serif text-xl font-bold italic">Low-stock email</h2>
+        <p className="mt-1 text-sm">
+          Every day at the time above (Cairo), if anything is Low or Out, you get one email listing it. Nothing low means no email.
+          {s.low_stock_last_sent && <> Last daily check: {s.low_stock_last_sent}.</>}
+        </p>
+        <ActionForm action={sendTestEmail} submitLabel="Send test email now" variant="secondary" className="mt-3" />
+      </div>
     </section>
   );
 }

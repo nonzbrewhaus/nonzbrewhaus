@@ -4,6 +4,35 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { InputError, num, text, time, type ActionResult } from "@/lib/form";
 
+/** Asks the low-stock-email Edge Function to send a test email now (it re-checks that the caller is the owner). */
+export async function sendTestEmail(_prev: ActionResult | null, _fd: FormData): Promise<ActionResult> {
+  const { supabase } = await requireAdmin();
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) return { ok: false, message: "Please sign in again." };
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/low-stock-email`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ mode: "test" }),
+      cache: "no-store",
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const hint = String(body?.error ?? "").includes("RESEND_API_KEY") ? " Add your Resend API key in Supabase first." : "";
+      return { ok: false, message: `${body?.error ?? `Failed (${res.status}).`}${hint}` };
+    }
+    return { ok: true, message: `Sent! Check your inbox (and spam) for "[Test] Nonzz's stock".` };
+  } catch (e) {
+    console.error(e);
+    return { ok: false, message: "Couldn't reach the email service. Please try again." };
+  }
+}
+
 export async function saveSettings(_prev: ActionResult | null, fd: FormData): Promise<ActionResult> {
   try {
     const { supabase } = await requireAdmin();
