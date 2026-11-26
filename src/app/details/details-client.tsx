@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { BasketBar, barButtonOff, barButtonOn } from "@/components/basket-bar";
 import { cartTotals, normalizeEgPhone, unitPrice } from "@/lib/booking";
 import { cart, useCart } from "@/lib/cart-store";
+import { rememberOrder } from "@/lib/recent-orders";
 import { placeOrder } from "./actions";
 
 const CUSTOMER_KEY = "nz-customer-v1";
@@ -54,6 +55,7 @@ export function DetailsClient() {
         try {
           localStorage.setItem(CUSTOMER_KEY, JSON.stringify({ name: name.trim(), phone }));
         } catch {}
+        rememberOrder(res.code, slot.label);
         setPlaced(res.code);
         router.push(`/o/${res.code}`);
         cart.clear();

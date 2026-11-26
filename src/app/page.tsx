@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { MenuClient, type MenuItem } from "./menu-client";
 
@@ -11,6 +12,12 @@ export default function Home() {
           <p className="mt-1 text-[11px] tracking-[0.3em]">BREW HAUS</p>
           <h1 className="mt-2.5 font-serif text-5xl font-bold italic leading-tight">Menu</h1>
           <p className="font-script text-2xl">Pick up, sip, repeat.</p>
+          <Link
+            href="/track"
+            className="mt-3 inline-flex min-h-11 items-center rounded-full border-[1.5px] border-brown bg-cream px-4 text-sm font-semibold"
+          >
+            Already ordered? Track my order →
+          </Link>
         </header>
 
         <Suspense fallback={<p className="mt-6 text-center">Brewing the menu…</p>}>
