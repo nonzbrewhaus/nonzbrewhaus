@@ -16,6 +16,8 @@ async function run(fn: () => Promise<string>): Promise<ActionResult> {
   try {
     const message = await fn();
     revalidatePath("/admin/menu");
+    revalidatePath("/admin/recipes");
+    revalidatePath("/admin/margins");
     revalidatePath("/");
     return { ok: true, message };
   } catch (e) {
@@ -50,7 +52,7 @@ export async function saveProduct(kind: Kind, id: string | null, _prev: ActionRe
     }
     const { error } = await supabase.from(t).insert({ ...row, status: "paused" });
     if (error) throw error;
-    return "Added as Paused. Set it Active when it's ready to sell.";
+    return "Added as Paused. Give it a recipe (Recipes page), then set it Active.";
   });
 }
 
@@ -60,7 +62,17 @@ export async function setStatus(kind: Kind, id: string, _prev: ActionResult | nu
     const status = oneOf(fd, "status", ["active", "paused", "archived"] as const);
     const paused_display = oneOf(fd, "paused_display", ["greyed", "hidden"] as const);
     const resume_on = status === "paused" ? optionalDate(fd, "resume_on") : null;
-    // shortcut: Phase 6 adds "no active recipe → can't be Active"; until recipes exist every item may be Active.
+    if (status === "active") {
+      // Selling something without a recipe would never take stock or show a cost.
+      const { data: r, error: rErr } = await supabase
+        .from("recipes")
+        .select("id")
+        .eq(kind === "item" ? "menu_item_id" : "addon_id", uuid(id))
+        .eq("is_active", true)
+        .maybeSingle();
+      if (rErr) throw rErr;
+      if (!r) throw new InputError("Add a recipe and set it active (Recipes page) before making this Active.");
+    }
     const { error } = await supabase.from(table(kind)).update({ status, paused_display, resume_on }).eq("id", uuid(id));
     if (error) throw error;
     return status === "archived" ? "Archived. Restore it any time from the Archived tab." : "Status updated.";

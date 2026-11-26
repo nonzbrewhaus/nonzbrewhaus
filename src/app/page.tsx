@@ -35,14 +35,17 @@ export default function Home() {
 
 async function Menu() {
   const supabase = await createClient();
-  const [itemsRes, addonsRes] = await Promise.all([
+  const [itemsRes, addonsRes, soldOutRes] = await Promise.all([
     supabase
       .from("menu_items")
       .select("id, category, name, description, price, is_signature, status, paused_display")
       .in("status", ["active", "paused"])
       .order("sort_order"),
     supabase.from("addons").select("id, name, price").eq("status", "active").order("sort_order"),
+    supabase.rpc("sold_out_products"),
   ]);
+  // If the sold-out check fails, show the menu anyway: create_order re-checks before accepting an order.
+  const soldOut = new Set(((soldOutRes.data ?? []) as { product_id: string }[]).map((r) => r.product_id));
 
   if (itemsRes.error || addonsRes.error) {
     return <p role="alert" className="mt-6 text-center">The menu is unavailable right now. Please try again in a minute.</p>;
@@ -57,9 +60,12 @@ async function Menu() {
       description: i.description,
       price: Number(i.price),
       is_signature: i.is_signature,
-      available: i.status === "active",
+      available: i.status === "active" && !soldOut.has(i.id),
+      soldOut: i.status === "active" && soldOut.has(i.id),
     }));
-  const addons = addonsRes.data.map((a) => ({ id: a.id, name: a.name, price: Number(a.price) }));
+  const addons = addonsRes.data
+    .filter((a) => !soldOut.has(a.id))
+    .map((a) => ({ id: a.id, name: a.name, price: Number(a.price) }));
 
   return <MenuClient items={items} addons={addons} />;
 }

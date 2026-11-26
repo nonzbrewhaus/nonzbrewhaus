@@ -20,10 +20,12 @@ async function Board({ searchParams }: { searchParams: PageProps<"/admin">["sear
   const day = typeof sp.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : today;
   const showAll = sp.all === "1";
 
-  const [dayRes, pendingRes] = await Promise.all([
+  const [dayRes, pendingRes, stockRes] = await Promise.all([
     supabase.rpc("admin_orders_for_day", { p_day: day }),
     supabase.rpc("admin_pending_payments"),
+    supabase.from("inventory_status").select("name, stock_status").eq("is_active", true).in("stock_status", ["out", "low"]),
   ]);
+  const lowStock = (stockRes.data ?? []) as { name: string; stock_status: "out" | "low" }[];
   if (dayRes.error || pendingRes.error) throw dayRes.error ?? pendingRes.error;
   const orders = dayRes.data as AdminOrder[];
   const pendingCount = (pendingRes.data as AdminOrder[]).length;
@@ -51,6 +53,15 @@ async function Board({ searchParams }: { searchParams: PageProps<"/admin">["sear
         <Link href="/admin/payments" className="card flex items-center justify-between bg-[#BFD7F2] p-4 font-bold">
           <span>{pendingCount} {pendingCount === 1 ? "payment" : "payments"} to review</span>
           <span>Review →</span>
+        </Link>
+      )}
+
+      {lowStock.length > 0 && (
+        <Link href="/admin/inventory" role="alert" className="card flex items-center justify-between gap-3 bg-[#F6D58E] p-4 font-semibold">
+          <span>
+            Stock: {lowStock.map((s) => `${s.name} ${s.stock_status === "out" ? "(out)" : "(low)"}`).join(", ")}
+          </span>
+          <span className="whitespace-nowrap font-bold">Inventory →</span>
         </Link>
       )}
 

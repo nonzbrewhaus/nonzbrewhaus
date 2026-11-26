@@ -15,6 +15,7 @@ export type MenuItem = {
   price: number;
   is_signature: boolean;
   available: boolean;
+  soldOut: boolean;
 };
 
 const CATEGORIES: { key: Category; title: string; cup: string }[] = [
@@ -93,7 +94,7 @@ export function MenuClient({ items, addons }: { items: MenuItem[]; addons: Addon
                         <span className="font-bold">{Number(item.price)}</span>
                       </div>
                       {item.description && <p className="text-xs">{item.description}</p>}
-                      {!item.available && <p className="text-xs font-semibold">Not available today</p>}
+                      {!item.available && <p className="text-xs font-semibold">{item.soldOut ? "Sold out" : "Not available today"}</p>}
                     </div>
                     {item.available && (
                       <button
