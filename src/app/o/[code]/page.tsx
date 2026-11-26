@@ -60,8 +60,8 @@ async function OrderView({ params }: { params: PageProps<"/o/[code]">["params"] 
     hour12: true,
   });
   const badge = BADGE[order.status];
-  const waText = encodeURIComponent(`Hi Nonzz's! About my order ${order.code}`);
-  const waLink = s.whatsapp_number ? `https://wa.me/${s.whatsapp_number.replace(/\D/g, "")}?text=${waText}` : null;
+  // Goes through our own redirect so the shop's number isn't in the page.
+  const waLink = s.whatsapp_number ? `/o/${order.code}/whatsapp` : null;
 
   const live = ["pending_payment", "payment_submitted", "confirmed", "ready"].includes(order.status);
 
