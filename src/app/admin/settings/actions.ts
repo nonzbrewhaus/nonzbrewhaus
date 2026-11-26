@@ -52,9 +52,13 @@ export async function saveSettings(_prev: ActionResult | null, fd: FormData): Pr
       if (u.protocol !== "https:") throw new InputError("InstaPay link must start with https://");
     }
 
+    const instagram = text(fd, "instagram_username", { max: 31 }).replace(/^@/, "");
+    if (!/^[A-Za-z0-9._]{0,30}$/.test(instagram)) throw new InputError("Instagram username can only have letters, numbers, dots and underscores.");
+
     const { error } = await supabase
       .from("settings")
       .update({
+        instagram_username: instagram,
         instapay_handle: text(fd, "instapay_handle", { max: 80 }),
         instapay_link: instapayLink,
         whatsapp_number: whatsapp,

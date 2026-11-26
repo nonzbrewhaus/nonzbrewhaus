@@ -68,7 +68,7 @@ export function ProofUpload({ code, again = false }: { code: string; again?: boo
     const up = await supabase.storage.from("payment-proofs").upload(path, body, { contentType: type, upsert: false });
     if (up.error) {
       setBusy(false);
-      setError("We couldn't upload that. Your order may have expired, or it already has 5 uploads. Message us on WhatsApp if you need help.");
+      setError("We couldn't upload that. Your order may have expired, or it already has 5 uploads. Message us on Instagram (@nonzbrewhaus) if you need help.");
       return;
     }
     const { error: rpcError } = await supabase.rpc("submit_payment_proof", { p_code: code, p_path: path });

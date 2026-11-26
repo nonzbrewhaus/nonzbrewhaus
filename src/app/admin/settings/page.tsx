@@ -36,7 +36,20 @@ async function Settings() {
             Get it in the InstaPay app: open your profile, tap <strong>Share</strong> (or <strong>Payment link</strong>) and copy the
             ipn.eg link. Customers who tap it go straight to paying you.
           </p>
-          <Field label="WhatsApp number" name="whatsapp_number" defaultValue={s.whatsapp_number} placeholder="+201xxxxxxxxx" type="tel" />
+          <Field
+            label="Instagram username (customers message you here)"
+            name="instagram_username"
+            defaultValue={s.instagram_username}
+            placeholder="nonzbrewhaus"
+            autoCapitalize="none"
+          />
+          <Field
+            label="WhatsApp number (backup only: used if Instagram is empty; never shown on the site)"
+            name="whatsapp_number"
+            defaultValue={s.whatsapp_number}
+            placeholder="+201xxxxxxxxx"
+            type="tel"
+          />
         </fieldset>
 
         <fieldset className="grid gap-3 sm:grid-cols-2">

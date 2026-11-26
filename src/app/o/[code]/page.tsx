@@ -42,13 +42,15 @@ async function OrderView({ params }: { params: PageProps<"/o/[code]">["params"] 
   if (!/^[A-HJ-NP-Z2-9]{8}$/.test(code)) notFound();
 
   const supabase = await createClient();
-  const [orderRes, settingsRes] = await Promise.all([
+  const [orderRes, settingsRes, contactRes] = await Promise.all([
     supabase.rpc("get_order", { p_code: code }),
     supabase.rpc("customer_settings").single(),
+    supabase.rpc("shop_contact").single(),
   ]);
   const order = orderRes.data as Order | null;
   if (!order) notFound();
-  const s = (settingsRes.data ?? {}) as { instapay_handle?: string; instapay_link?: string; whatsapp_number?: string };
+  const s = (settingsRes.data ?? {}) as { instapay_handle?: string; instapay_link?: string };
+  const contact = (contactRes.data ?? {}) as { instagram_username?: string; has_whatsapp?: boolean };
 
   const pickup = new Date(order.pickup_at).toLocaleString("en-GB", {
     timeZone: "Africa/Cairo",
@@ -60,8 +62,10 @@ async function OrderView({ params }: { params: PageProps<"/o/[code]">["params"] 
     hour12: true,
   });
   const badge = BADGE[order.status];
-  // Goes through our own redirect so the shop's number isn't in the page.
-  const waLink = s.whatsapp_number ? `/o/${order.code}/whatsapp` : null;
+  // Instagram DM first; WhatsApp only as a fallback, through our own redirect so the number isn't in the page.
+  const igLink = contact.instagram_username ? `https://ig.me/m/${contact.instagram_username}` : null;
+  const waLink = !igLink && contact.has_whatsapp ? `/o/${order.code}/whatsapp` : null;
+  const messageUs = igLink ? "message us on Instagram" : "message us";
 
   const live = ["pending_payment", "payment_submitted", "confirmed", "ready"].includes(order.status);
 
@@ -105,7 +109,7 @@ async function OrderView({ params }: { params: PageProps<"/o/[code]">["params"] 
                 <CopyButton text={s.instapay_handle} />
               </div>
             )}
-            {!s.instapay_link && !s.instapay_handle && <p className="mt-2 text-sm">Payment details are coming soon. Please message us on WhatsApp.</p>}
+            {!s.instapay_link && !s.instapay_handle && <p className="mt-2 text-sm">Payment details are coming soon. Please {messageUs}.</p>}
           </div>
           <ProofUpload code={order.code} />
           <p className="mt-1.5 text-center text-xs">Step 2: after paying, upload the InstaPay receipt so we can confirm your order.</p>
@@ -123,7 +127,7 @@ async function OrderView({ params }: { params: PageProps<"/o/[code]">["params"] 
       {order.status === "confirmed" && <p className="mt-3 font-serif text-[26px] font-bold italic">Payment confirmed. See you {pickup}!</p>}
       {order.status === "ready" && <p className="mt-3 font-serif text-[26px] font-bold italic">Your drinks are ready. Come pick them up!</p>}
       {order.status === "picked_up" && <p className="mt-3">Enjoy your coffee, and thank you! ♥</p>}
-      {order.status === "cancelled" && <p className="mt-3">This order was cancelled. Message us on WhatsApp if that&apos;s unexpected.</p>}
+      {order.status === "cancelled" && <p className="mt-3">This order was cancelled. Please {messageUs} if that&apos;s unexpected.</p>}
       {order.status === "expired" && (
         <div className="mt-3">
           <p>Time ran out before payment arrived, so your slot was released.</p>
@@ -150,6 +154,19 @@ async function OrderView({ params }: { params: PageProps<"/o/[code]">["params"] 
         <p className="mt-1 flex justify-between"><span>Total</span><strong>{Number(order.total)} EGP</strong></p>
       </div>
 
+      {igLink && (
+        <div className="mt-3.5">
+          <a href={igLink} target="_blank" rel="noopener noreferrer" className="btn btn-secondary flex w-full items-center justify-center">
+            Message us on Instagram ↗
+          </a>
+          <div className="mt-2 flex items-center gap-2 text-sm">
+            <span className="flex-1">
+              Mention your order number <strong>#{order.code}</strong>
+            </span>
+            <CopyButton text={order.code} />
+          </div>
+        </div>
+      )}
       {waLink && (
         <a href={waLink} target="_blank" rel="noopener noreferrer" className="btn btn-secondary mt-3.5 flex w-full items-center justify-center">
           Message us on WhatsApp

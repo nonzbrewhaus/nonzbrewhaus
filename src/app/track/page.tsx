@@ -51,7 +51,7 @@ async function Lookup({ searchParams }: { searchParams: PageProps<"/track">["sea
   }
   return (
     <p role="alert" className="mt-3 rounded-xl border-[1.5px] border-brown bg-cream p-3 text-sm font-semibold">
-      We couldn&apos;t find order “{raw.slice(0, 20)}”. Check the 8 letters and numbers, or message us on WhatsApp.
+      We couldn&apos;t find order “{raw.slice(0, 20)}”. Check the 8 letters and numbers, or message us on Instagram (@nonzbrewhaus).
     </p>
   );
 }
