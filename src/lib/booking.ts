@@ -10,7 +10,12 @@ export type CartLine = {
   price: number;
   addons: Addon[];
   qty: number;
+  /** Per-drink note ("less ice"); applies to every drink on this line. */
+  note?: string;
 };
+
+export const MAX_LINE_QTY = 10;
+export const MAX_NOTE = 120;
 
 export function lineKey(itemId: string, addonIds: string[]): string {
   return `${itemId}|${[...addonIds].sort().join(",")}`;
@@ -31,12 +36,26 @@ export function cartTotals(lines: CartLine[]) {
 export function addLine(lines: CartLine[], line: Omit<CartLine, "key" | "qty">): CartLine[] {
   const key = lineKey(line.itemId, line.addons.map((a) => a.id));
   const existing = lines.find((l) => l.key === key);
-  if (existing) return lines.map((l) => (l.key === key ? { ...l, qty: Math.min(l.qty + 1, 10) } : l));
+  if (existing) return lines.map((l) => (l.key === key ? { ...l, qty: Math.min(l.qty + 1, MAX_LINE_QTY) } : l));
   return [...lines, { ...line, key, qty: 1 }];
 }
 
 export function removeOne(lines: CartLine[], key: string): CartLine[] {
-  return lines.map((l) => (l.key === key ? { ...l, qty: l.qty - 1 } : l)).filter((l) => l.qty > 0);
+  return setQty(lines, key, (lines.find((l) => l.key === key)?.qty ?? 0) - 1);
+}
+
+/** Sets a line's quantity (clamped to 0–10); 0 removes the line. */
+export function setQty(lines: CartLine[], key: string, qty: number): CartLine[] {
+  const q = Math.max(0, Math.min(MAX_LINE_QTY, Math.floor(qty)));
+  return lines.map((l) => (l.key === key ? { ...l, qty: q } : l)).filter((l) => l.qty > 0);
+}
+
+export function removeLine(lines: CartLine[], key: string): CartLine[] {
+  return lines.filter((l) => l.key !== key);
+}
+
+export function setNote(lines: CartLine[], key: string, note: string): CartLine[] {
+  return lines.map((l) => (l.key === key ? { ...l, note: note.slice(0, MAX_NOTE) } : l));
 }
 
 /** Mirrors create_order's rule: Egyptian mobile → +201xxxxxxxxx, else null. */

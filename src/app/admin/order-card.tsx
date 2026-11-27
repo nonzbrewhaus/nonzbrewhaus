@@ -15,7 +15,7 @@ export type AdminOrder = {
   notes: string;
   proof: string | null;
   created_at: string;
-  items: { name: string; qty: number; price: number; addons: string[] }[];
+  items: { name: string; qty: number; price: number; addons: string[]; note?: string }[];
 };
 
 export const STATUS: Record<AdminOrder["status"], { text: string; bg: string }> = {
@@ -53,6 +53,7 @@ export function OrderCard({ o, receiptUrl, showDate = false }: { o: AdminOrder; 
           <li key={i}>
             <strong>{it.qty}×</strong> {it.name}
             {it.addons.length > 0 && <span> + {it.addons.join(", ")}</span>}
+            {it.note && <span className="ml-1 rounded bg-[#F6D58E] px-1.5 font-semibold">“{it.note}”</span>}
           </li>
         ))}
       </ul>

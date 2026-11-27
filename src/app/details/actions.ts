@@ -8,7 +8,7 @@ export type PlaceOrderInput = {
   phone: string;
   notes: string;
   pickupAt: string;
-  items: { itemId: string; qty: number; addonIds: string[] }[];
+  items: { itemId: string; qty: number; addonIds: string[]; note?: string }[];
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -28,7 +28,8 @@ export async function placeOrder(input: PlaceOrderInput): Promise<{ ok: true; co
       (i) =>
         typeof i?.itemId === "string" && UUID.test(i.itemId) &&
         Number.isInteger(i.qty) && i.qty >= 1 && i.qty <= 10 &&
-        Array.isArray(i.addonIds) && i.addonIds.length <= 5 && i.addonIds.every((a) => typeof a === "string" && UUID.test(a)),
+        Array.isArray(i.addonIds) && i.addonIds.length <= 5 && i.addonIds.every((a) => typeof a === "string" && UUID.test(a)) &&
+        (i.note === undefined || (typeof i.note === "string" && i.note.length <= 120)),
     );
   if (!shapeOk) return { ok: false, error: ORDER_ERRORS.INVALID_ITEMS };
 
@@ -38,7 +39,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<{ ok: true; co
     p_phone: input.phone.slice(0, 40),
     p_notes: input.notes.slice(0, 1000),
     p_pickup_at: input.pickupAt,
-    p_items: items.map((i) => ({ item_id: i.itemId, qty: i.qty, addon_ids: i.addonIds })),
+    p_items: items.map((i) => ({ item_id: i.itemId, qty: i.qty, addon_ids: i.addonIds, note: (i.note ?? "").trim() })),
   });
 
   if (error) {

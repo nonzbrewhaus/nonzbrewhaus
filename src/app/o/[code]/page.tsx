@@ -14,7 +14,7 @@ type Order = {
   total: number;
   drinks: number;
   notes: string;
-  items: { name: string; price: number; qty: number; addons: { name: string; price: number }[] }[];
+  items: { name: string; price: number; qty: number; note?: string; addons: { name: string; price: number }[] }[];
 };
 
 const BADGE: Record<Order["status"], { text: string; bg: string }> = {
@@ -144,6 +144,7 @@ async function OrderView({ params }: { params: PageProps<"/o/[code]">["params"] 
                 {it.addons.map((a, j) => (
                   <span key={j} className="block text-[13px]">+ {a.name}</span>
                 ))}
+                {it.note && <span className="block text-[13px] italic">“{it.note}”</span>}
               </span>
               <span className="font-bold">{(Number(it.price) + it.addons.reduce((x, a) => x + Number(a.price), 0)) * it.qty}</span>
             </li>

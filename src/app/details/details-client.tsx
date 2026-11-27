@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { BasketBar, barButtonOff, barButtonOn } from "@/components/basket-bar";
-import { cartTotals, normalizeEgPhone, unitPrice } from "@/lib/booking";
+import { BasketEditor } from "@/components/basket-editor";
+import { cartTotals, normalizeEgPhone } from "@/lib/booking";
 import { cart, useCart } from "@/lib/cart-store";
 import { rememberOrder } from "@/lib/recent-orders";
 import { placeOrder } from "./actions";
@@ -49,7 +50,7 @@ export function DetailsClient() {
         phone,
         notes: notes.trim(),
         pickupAt: slot.pickupAt,
-        items: lines.map((l) => ({ itemId: l.itemId, qty: l.qty, addonIds: l.addons.map((a) => a.id) })),
+        items: lines.map((l) => ({ itemId: l.itemId, qty: l.qty, addonIds: l.addons.map((a) => a.id), note: (l.note ?? "").trim() })),
       });
       if (res.ok) {
         try {
@@ -109,40 +110,23 @@ export function DetailsClient() {
         </label>
         {touched && !phoneOk && <p className="mt-1 text-sm font-semibold text-red-800">Enter an Egyptian mobile number, like 01xxxxxxxxx.</p>}
 
-        <label className="mt-2.5 block text-[13px] font-bold">
-          Notes (optional)
+        <h2 className="mt-5 border-t-[1.5px] border-brown pt-3 font-serif text-2xl font-bold italic">Your order</h2>
+        <BasketEditor compact />
+        <Link href="/" className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold underline">+ Add more drinks</Link>
+
+        <label className="mt-2 block text-[13px] font-bold">
+          Note for the whole order (optional)
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             maxLength={500}
-            placeholder="Less ice, extra sweet…"
+            placeholder="Anything else we should know?"
             className="field mt-1 resize-none text-base"
           />
         </label>
 
         <div className="mt-4 border-t-[1.5px] border-brown pt-2.5">
-          <ul>
-            {lines.map((l) => (
-              <li key={l.key} className="flex items-start gap-2 py-1.5">
-                <div className="flex-1">
-                  <p className="font-bold">{l.qty}× {l.name}</p>
-                  {l.addons.map((a) => (
-                    <p key={a.id} className="text-[13px]">+ {a.name} ({a.price})</p>
-                  ))}
-                </div>
-                <span className="font-bold">{unitPrice(l) * l.qty}</span>
-                <button
-                  type="button"
-                  onClick={() => cart.removeOne(l.key)}
-                  aria-label={`Remove one ${l.name}`}
-                  className="-mt-2.5 size-11 text-[22px] font-bold"
-                >
-                  −
-                </button>
-              </li>
-            ))}
-          </ul>
           <p className="mt-1.5 flex justify-between text-sm"><span>Pickup</span><span className="font-bold">{slot.label}</span></p>
           <p className="mt-1.5 flex justify-between text-lg font-bold"><span>Total</span><span>{total} EGP</span></p>
           <p className="mt-2.5 text-xs">You&apos;ll pay by InstaPay on the next screen. We hold your slot while you pay.</p>
@@ -157,6 +141,7 @@ export function DetailsClient() {
       </form>
 
       <BasketBar
+        editable={false}
         title={`${total} EGP`}
         sub={ready ? "Ready to place" : "Add your name and phone"}
         action={

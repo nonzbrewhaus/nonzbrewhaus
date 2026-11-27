@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { addLine, cartTotals, dayLabel, formatSlotTime, lineKey, normalizeEgPhone, removeOne, type CartLine } from "./booking.ts";
+import { addLine, cartTotals, dayLabel, formatSlotTime, lineKey, normalizeEgPhone, removeLine, removeOne, setNote, setQty, type CartLine } from "./booking.ts";
 
 const latte = { itemId: "latte", name: "Iced Latte", category: "coffee" as const, price: 125 };
 const oat = { id: "oat", name: "Oat Milk", price: 40 };
@@ -28,6 +28,21 @@ test("removeOne drops the line at zero", () => {
   let lines = addLine([], { ...latte, addons: [] });
   lines = removeOne(lines, lines[0].key);
   assert.equal(lines.length, 0);
+});
+
+test("setQty clamps to 0–10 and removes at 0; removeLine; setNote keeps the line and trims length", () => {
+  let lines = addLine([], { ...latte, addons: [] });
+  const key = lines[0].key;
+  lines = setQty(lines, key, 25);
+  assert.equal(lines[0].qty, 10);
+  lines = setNote(lines, key, "less ice " + "x".repeat(200));
+  assert.equal(lines[0].note?.length, 120);
+  assert.ok(lines[0].note?.startsWith("less ice"));
+  lines = addLine(lines, { ...latte, addons: [] }); // stays at max, note kept
+  assert.equal(lines[0].qty, 10);
+  assert.ok(lines[0].note);
+  assert.equal(setQty(lines, key, 0).length, 0);
+  assert.equal(removeLine(lines, key).length, 0);
 });
 
 test("normalizeEgPhone matches the database rule", () => {

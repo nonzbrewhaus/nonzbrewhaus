@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { addLine, removeOne, type CartLine } from "./booking";
+import { addLine, removeLine, removeOne, setNote, setQty, type CartLine } from "./booking";
 
 // Basket + chosen slot, kept in the browser between the separate pages (localStorage).
 export type CartState = { lines: CartLine[]; slot: { pickupAt: string; label: string } | null };
@@ -40,6 +40,17 @@ export const cart = {
     const lines = removeOne(state.lines, key);
     set({ lines, slot: lines.length ? state.slot : null });
   },
+  setQty: (key: string, qty: number) => {
+    load();
+    const lines = setQty(state.lines, key, qty);
+    set({ lines, slot: lines.length ? state.slot : null });
+  },
+  removeLine: (key: string) => {
+    load();
+    const lines = removeLine(state.lines, key);
+    set({ lines, slot: lines.length ? state.slot : null });
+  },
+  setNote: (key: string, note: string) => (load(), set({ ...state, lines: setNote(state.lines, key, note) })),
   /** Replace lines after re-checking them against the live menu. */
   replaceLines: (lines: CartLine[]) => (load(), set({ ...state, lines })),
   setSlot: (slot: CartState["slot"]) => (load(), set({ ...state, slot })),
